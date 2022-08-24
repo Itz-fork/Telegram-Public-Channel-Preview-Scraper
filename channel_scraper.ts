@@ -1,6 +1,9 @@
 // Copyright (c) 2022 Itz-fork
 
-import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.33-alpha/deno-dom-wasm.ts";
+import {
+  DOMParser,
+  Element,
+} from "https://deno.land/x/deno_dom@v0.1.33-alpha/deno-dom-wasm.ts";
 
 // deno-lint-ignore require-await no-explicit-any
 async function remove_tags(html: any) {
@@ -14,6 +17,19 @@ async function remove_tags(html: any) {
   html = tmp.textContent || tmp.innerText;
   html = html.replace(/\$br\$/g, "\n");
   return html;
+}
+
+// deno-lint-ignore require-await
+async function get_images(msg: Element) {
+  let imgs = [];
+  if (msg.previousElementSibling?.nodeName === "DIV") {
+    for (const cnt of msg.previousElementSibling.getElementsByTagName("a")) {
+      imgs.push(cnt?.getAttribute("style")?.match(/(?<=\(')(.*?)(?='\))/)[0]);
+    }
+  } else {
+    imgs.push(msg?.getAttribute("style")?.match(/(?<=\(')(.*?)(?='\))/)[0]);
+  }
+  return imgs;
 }
 
 async function fetch_posts(channel: string) {
@@ -40,9 +56,7 @@ async function fetch_posts(channel: string) {
       post_url: foot.getElementsByClassName("tgme_widget_message_date")[0]
         .getAttribute("href"),
       time: foot.getElementsByTagName("time")[0].getAttribute("datetime"),
-      media: msg.previousElementSibling?.getAttribute("style")?.match(
-        /(?<=\()(.*?)(?=\))/,
-      ),
+      media: await get_images(msg),
     });
   }
   return messages_list;
