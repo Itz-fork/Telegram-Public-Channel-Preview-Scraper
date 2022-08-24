@@ -1,23 +1,25 @@
-// deno-lint-ignore-file
+// Copyright (c) 2022 Itz-fork
+
 import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.33-alpha/deno-dom-wasm.ts";
+
+// deno-lint-ignore require-await no-explicit-any
+async function remove_tags(html: any) {
+  html = html.replace(/<br>/g, "$br$");
+  html = html.replace(/(?:\r\n|\r|\n)/g, "$br$");
+  let tmp = new DOMParser().parseFromString(
+    "<html><body></body></html>",
+    "text/html",
+  )?.createElement("DIV");
+  tmp.innerHTML = html;
+  html = tmp.textContent || tmp.innerText;
+  html = html.replace(/\$br\$/g, "\n");
+  return html;
+}
 
 async function fetch_posts(channel: string) {
   // Fetch html
   const resp = await (await fetch(`https://t.me/s/${channel}`)).text();
   const html = new DOMParser().parseFromString(resp, "text/html");
-
-  async function remove_tags(html: any) {
-    html = html.replace(/<br>/g, "$br$");
-    html = html.replace(/(?:\r\n|\r|\n)/g, "$br$");
-    let tmp = new DOMParser().parseFromString(
-      "<html><body></body></html>",
-      "text/html",
-    )?.createElement("DIV");
-    tmp.innerHTML = html;
-    html = tmp.textContent || tmp.innerText;
-    html = html.replace(/\$br\$/g, "\n");
-    return html;
-  }
 
   // Grab messages
   const messages = html?.getElementsByClassName(
@@ -46,4 +48,4 @@ async function fetch_posts(channel: string) {
   return messages_list;
 }
 
-// console.log(await fetch_posts("NexaBotsUpdates"));
+export default fetch_posts;
