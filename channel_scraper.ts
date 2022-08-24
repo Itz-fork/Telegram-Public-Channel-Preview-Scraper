@@ -49,10 +49,10 @@ async function fetch_posts(channel: string) {
   let messages_list = [];
   for (const [index, msg] of messages.entries()) {
     let foot = footers[index];
+    let vis = foot.getElementsByClassName("tgme_widget_message_views")
     messages_list.push({
       text: await remove_tags(msg.innerHTML),
-      views:
-        foot.getElementsByClassName("tgme_widget_message_views")[0].innerText,
+      views: vis[0] ? vis[0].innerText : "",
       post_url: foot.getElementsByClassName("tgme_widget_message_date")[0]
         .getAttribute("href"),
       time: foot.getElementsByTagName("time")[0].getAttribute("datetime"),
